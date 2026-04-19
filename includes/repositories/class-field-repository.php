@@ -52,6 +52,22 @@ class WP_Plugin_Stamdata_Field_Repository {
 		return $result ? $result : null;
 	}
 
+	public function get_by_location( $location_id, $data_version = null ) {
+		global $wpdb;
+
+		if ( null === $data_version ) {
+			$data_version = wp_plugin_stamdata_get_active_data_version();
+		}
+
+		$sql = $wpdb->prepare(
+			"SELECT * FROM {$this->get_table_name()} WHERE location_id = %d AND data_version = %s ORDER BY sort_order ASC, name ASC",
+			$location_id,
+			$data_version
+		);
+
+		return $wpdb->get_results( $sql, ARRAY_A );
+	}
+
 	public function create( array $data ) {
 		global $wpdb;
 

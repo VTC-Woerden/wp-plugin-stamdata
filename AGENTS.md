@@ -276,6 +276,27 @@ Preferred options:
 These access patterns should hide the data-mode complexity from consuming plugins where possible.  
 Consuming plugins should not have to manually decide SQL rules for `live` vs `test` on every query.
 
+Public helper functions are the preferred integration contract for other plugins.  
+Repositories are internal implementation details and should not be the primary dependency for consuming plugins.
+
+Current public API direction:
+
+- `wp_plugin_stamdata_get_team( $id, $data_version = null )`
+- `wp_plugin_stamdata_get_teams( $data_version = null )`
+- `wp_plugin_stamdata_get_location( $id, $data_version = null )`
+- `wp_plugin_stamdata_get_locations( $data_version = null )`
+- `wp_plugin_stamdata_get_field( $id, $data_version = null )`
+- `wp_plugin_stamdata_get_fields( $data_version = null )`
+- `wp_plugin_stamdata_get_fields_by_location( $location_id, $data_version = null )`
+
+Rules for future public API additions:
+
+- keep helper names stable and prefixed with `wp_plugin_stamdata_`
+- default to the active global dataset when no explicit data version is passed
+- add helper functions for common lookup patterns instead of making consuming plugins compose raw repository calls
+- document new public helpers when they are introduced
+- prefer additive evolution; do not break existing public helpers without a compatibility layer
+
 Avoid encouraging direct SQL queries from consuming plugins unless no internal API exists yet.
 
 ## Naming Conventions

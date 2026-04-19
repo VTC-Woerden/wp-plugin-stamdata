@@ -62,6 +62,81 @@ function wp_plugin_stamdata_get_team( $team_id, $data_version = null ) {
 }
 
 /**
+ * Return all teams for a dataset.
+ *
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function wp_plugin_stamdata_get_teams( $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Team_Repository();
+
+	return $repository->get_all( null === $data_version ? '' : $data_version );
+}
+
+/**
+ * Return a single location by ID.
+ *
+ * @param int         $location_id  Location ID.
+ * @param string|null $data_version Optional data version override.
+ * @return array|null
+ */
+function wp_plugin_stamdata_get_location( $location_id, $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Location_Repository();
+
+	return $repository->get_by_id( (int) $location_id, $data_version );
+}
+
+/**
+ * Return all locations for a dataset.
+ *
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function wp_plugin_stamdata_get_locations( $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Location_Repository();
+
+	return $repository->get_all( null === $data_version ? '' : $data_version );
+}
+
+/**
+ * Return a single field by ID.
+ *
+ * @param int         $field_id     Field ID.
+ * @param string|null $data_version Optional data version override.
+ * @return array|null
+ */
+function wp_plugin_stamdata_get_field( $field_id, $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Field_Repository();
+
+	return $repository->get_by_id( (int) $field_id, $data_version );
+}
+
+/**
+ * Return all fields for a dataset.
+ *
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function wp_plugin_stamdata_get_fields( $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Field_Repository();
+
+	return $repository->get_all( null === $data_version ? '' : $data_version );
+}
+
+/**
+ * Return all fields that belong to a location.
+ *
+ * @param int         $location_id  Location ID.
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function wp_plugin_stamdata_get_fields_by_location( $location_id, $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Field_Repository();
+
+	return $repository->get_by_location( (int) $location_id, $data_version );
+}
+
+/**
  * Return the active data version for the whole plugin.
  *
  * @return string
