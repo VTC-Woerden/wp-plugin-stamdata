@@ -46,6 +46,17 @@ class WP_Plugin_Stamdata_Schema {
 	}
 
 	/**
+	 * Return the field availability table name.
+	 *
+	 * @return string
+	 */
+	public static function get_field_availability_table_name() {
+		global $wpdb;
+
+		return $wpdb->prefix . 'stamdata_field_availability';
+	}
+
+	/**
 	 * Create or update plugin tables.
 	 *
 	 * @return void
@@ -108,5 +119,25 @@ class WP_Plugin_Stamdata_Schema {
 		) {$charset_collate};";
 
 		dbDelta( $fields_sql );
+
+		$availability_table = self::get_field_availability_table_name();
+		$availability_sql   = "CREATE TABLE {$availability_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			field_id bigint(20) unsigned NOT NULL,
+			week_type varchar(20) NOT NULL DEFAULT 'default',
+			week_number tinyint(3) unsigned DEFAULT NULL,
+			day_of_week tinyint(1) unsigned NOT NULL,
+			start_time time NOT NULL,
+			end_time time NOT NULL,
+			data_version varchar(20) NOT NULL DEFAULT 'live',
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY field_id (field_id),
+			KEY week_lookup (field_id, week_type, week_number, data_version),
+			KEY data_version (data_version)
+		) {$charset_collate};";
+
+		dbDelta( $availability_sql );
 	}
 }

@@ -13,7 +13,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WP_PLUGIN_STAMDATA_VERSION', '0.1.0' );
-define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '3' );
+define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '4' );
 define( 'WP_PLUGIN_STAMDATA_FILE', __FILE__ );
 define( 'WP_PLUGIN_STAMDATA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WP_PLUGIN_STAMDATA_URL', plugin_dir_url( __FILE__ ) );
@@ -23,6 +23,7 @@ require_once WP_PLUGIN_STAMDATA_PATH . 'includes/class-installer.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-team-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-location-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-field-repository.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-field-availability-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/class-settings-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/teams/class-team-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/locations/class-location-admin-page.php';
@@ -134,6 +135,20 @@ function stamdata_get_fields_by_location( $location_id, $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Field_Repository();
 
 	return $repository->get_by_location( (int) $location_id, $data_version );
+}
+
+/**
+ * Return field availability rows for the default week or an exception week.
+ *
+ * @param int         $field_id     Field ID.
+ * @param int|null    $week_number  Optional exception week number (1-53).
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function stamdata_get_field_availability( $field_id, $week_number = null, $data_version = null ) {
+	$repository = new WP_Plugin_Stamdata_Field_Availability_Repository();
+
+	return $repository->get_for_field( (int) $field_id, $week_number, $data_version );
 }
 
 /**

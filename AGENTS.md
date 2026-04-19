@@ -15,6 +15,7 @@ The plugin stores and exposes the following master data:
 - `Coaches`
 - `Locaties` (`locations`)
 - `Velden` (`fields`)
+- `Veld beschikbaarheid` (`field availability`)
 
 Every entity must have its own dedicated database table.
 
@@ -54,6 +55,7 @@ Recommended entity mapping:
 - `Coaches` -> coaches
 - `Locaties` -> locations
 - `Velden` -> fields
+- `Veld beschikbaarheid` -> field_availability
 
 Note:
 
@@ -70,6 +72,7 @@ Use one table per entity, with the WordPress table prefix:
 - `{$wpdb->prefix}stamdata_coaches`
 - `{$wpdb->prefix}stamdata_locations`
 - `{$wpdb->prefix}stamdata_fields`
+- `{$wpdb->prefix}stamdata_field_availability`
 
 Use `dbDelta()` for creation and controlled upgrades.
 
@@ -207,6 +210,29 @@ Suggested columns:
 
 `Velden` are fields/courts/pitches that belong to a location.
 
+### `stamdata_field_availability`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `field_id` bigint unsigned
+- `week_type` varchar
+- `week_number` tinyint unsigned, nullable
+- `day_of_week` tinyint unsigned
+- `start_time` time
+- `end_time` time
+- `created_at` datetime
+- `updated_at` datetime
+
+`Veld beschikbaarheid` stores the recurring weekly training availability of a field.
+
+Rules:
+
+- the standard/default availability should represent the normal recurring weekly schedule
+- exception weeks can override or supplement the default schedule for a selected week number
+- week selection is required when managing exception weeks
+- this is a child entity of `Velden`, not a standalone top-level sidebar entity
+
 ## Relationships
 
 Use logical relationships in code, even if MySQL foreign keys are not enforced in every environment.
@@ -217,6 +243,7 @@ Recommended relationships:
 - coaches can belong to teams
 - matches belong to a home team and an away team
 - fields belong to locations
+- field availability belongs to fields
 
 Avoid hard-coupling WordPress posts to the core data model unless there is a strong product reason.
 
@@ -288,6 +315,7 @@ Current public API direction:
 - `stamdata_get_field( $id, $data_version = null )`
 - `stamdata_get_fields( $data_version = null )`
 - `stamdata_get_fields_by_location( $location_id, $data_version = null )`
+- `stamdata_get_field_availability( $field_id, $week_number = null, $data_version = null )`
 
 Rules for future public API additions:
 
@@ -318,11 +346,13 @@ When admin screens are built:
 - make it very clear whether an admin is editing `live` data or `test` data
 - optimize local/test editing flows so changing data is quick and low-friction
 - each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, `Locaties`, `Velden`, and `Matches`
+- child entities like `Veld beschikbaarheid` may live under a parent entity workflow instead of having their own sidebar entry
 - use a dedicated list page per entity for overview and management
 - use a separate add/edit page for each entity instead of combining form editing into the list screen
 - keep add/edit pages out of the sidebar; only the entity overview/list page should appear in the menu
 - provide an `Add new` button from the entity list page and `Edit` links from the table/list rows
 - future entities should follow the same admin UX pattern as `Teams`
+- `Veld beschikbaarheid` should be managed from within `Velden` as a separate hidden page/view, with week selection on the screen itself
 
 ## External API Sync
 
@@ -354,6 +384,7 @@ Production rule:
 
 - Create unique indexes where useful, such as team slugs
 - Add normal indexes for common lookups like `team_id`, `location_id`, and match date
+- Add normal indexes for common lookups like `team_id`, `location_id`, `field_id`, and match date
 - If using `data_version`, include it in indexes where it affects common lookups
 - Handle deletion carefully; prefer soft constraints in logic over unsafe cascades
 - Think through what happens when a team is removed but players, coaches, or matches still reference it
