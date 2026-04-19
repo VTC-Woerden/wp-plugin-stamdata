@@ -259,6 +259,12 @@ When admin screens are built:
 - provide helpful empty states and error messages
 - make it very clear whether an admin is editing `live` data or `test` data
 - optimize local/test editing flows so changing data is quick and low-friction
+- each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, and `Matches`
+- use a dedicated list page per entity for overview and management
+- use a separate add/edit page for each entity instead of combining form editing into the list screen
+- keep add/edit pages out of the sidebar; only the entity overview/list page should appear in the menu
+- provide an `Add new` button from the entity list page and `Edit` links from the table/list rows
+- future entities should follow the same admin UX pattern as `Teams`
 
 ## External API Sync
 
