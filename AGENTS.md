@@ -268,7 +268,7 @@ Because this plugin is a shared data layer, expose stable access patterns.
 
 Preferred options:
 
-- public PHP functions with a clear prefix, for example `wp_plugin_stamdata_get_team( $id )`
+- public PHP functions with a clear prefix, for example `stamdata_get_team( $id )`
 - service/repository classes behind a bootstrap container
 - WordPress filters/actions for extension points
 - optional REST API endpoints later if needed
@@ -281,17 +281,17 @@ Repositories are internal implementation details and should not be the primary d
 
 Current public API direction:
 
-- `wp_plugin_stamdata_get_team( $id, $data_version = null )`
-- `wp_plugin_stamdata_get_teams( $data_version = null )`
-- `wp_plugin_stamdata_get_location( $id, $data_version = null )`
-- `wp_plugin_stamdata_get_locations( $data_version = null )`
-- `wp_plugin_stamdata_get_field( $id, $data_version = null )`
-- `wp_plugin_stamdata_get_fields( $data_version = null )`
-- `wp_plugin_stamdata_get_fields_by_location( $location_id, $data_version = null )`
+- `stamdata_get_team( $id, $data_version = null )`
+- `stamdata_get_teams( $data_version = null )`
+- `stamdata_get_location( $id, $data_version = null )`
+- `stamdata_get_locations( $data_version = null )`
+- `stamdata_get_field( $id, $data_version = null )`
+- `stamdata_get_fields( $data_version = null )`
+- `stamdata_get_fields_by_location( $location_id, $data_version = null )`
 
 Rules for future public API additions:
 
-- keep helper names stable and prefixed with `wp_plugin_stamdata_`
+- keep helper names stable and prefixed with `stamdata_`
 - default to the active global dataset when no explicit data version is passed
 - add helper functions for common lookup patterns instead of making consuming plugins compose raw repository calls
 - document new public helpers when they are introduced

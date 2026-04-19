@@ -55,7 +55,7 @@ wp_plugin_stamdata();
  * @param string|null $data_version  Optional data version override.
  * @return array|null
  */
-function wp_plugin_stamdata_get_team( $team_id, $data_version = null ) {
+function stamdata_get_team( $team_id, $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Team_Repository();
 
 	return $repository->get_by_id( (int) $team_id, $data_version );
@@ -67,7 +67,7 @@ function wp_plugin_stamdata_get_team( $team_id, $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array
  */
-function wp_plugin_stamdata_get_teams( $data_version = null ) {
+function stamdata_get_teams( $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Team_Repository();
 
 	return $repository->get_all( null === $data_version ? '' : $data_version );
@@ -80,7 +80,7 @@ function wp_plugin_stamdata_get_teams( $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array|null
  */
-function wp_plugin_stamdata_get_location( $location_id, $data_version = null ) {
+function stamdata_get_location( $location_id, $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Location_Repository();
 
 	return $repository->get_by_id( (int) $location_id, $data_version );
@@ -92,7 +92,7 @@ function wp_plugin_stamdata_get_location( $location_id, $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array
  */
-function wp_plugin_stamdata_get_locations( $data_version = null ) {
+function stamdata_get_locations( $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Location_Repository();
 
 	return $repository->get_all( null === $data_version ? '' : $data_version );
@@ -105,7 +105,7 @@ function wp_plugin_stamdata_get_locations( $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array|null
  */
-function wp_plugin_stamdata_get_field( $field_id, $data_version = null ) {
+function stamdata_get_field( $field_id, $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Field_Repository();
 
 	return $repository->get_by_id( (int) $field_id, $data_version );
@@ -117,7 +117,7 @@ function wp_plugin_stamdata_get_field( $field_id, $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array
  */
-function wp_plugin_stamdata_get_fields( $data_version = null ) {
+function stamdata_get_fields( $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Field_Repository();
 
 	return $repository->get_all( null === $data_version ? '' : $data_version );
@@ -130,7 +130,7 @@ function wp_plugin_stamdata_get_fields( $data_version = null ) {
  * @param string|null $data_version Optional data version override.
  * @return array
  */
-function wp_plugin_stamdata_get_fields_by_location( $location_id, $data_version = null ) {
+function stamdata_get_fields_by_location( $location_id, $data_version = null ) {
 	$repository = new WP_Plugin_Stamdata_Field_Repository();
 
 	return $repository->get_by_location( (int) $location_id, $data_version );
