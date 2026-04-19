@@ -13,6 +13,8 @@ The plugin stores and exposes the following master data:
 - `Teams`
 - `Spelers` (`players`)
 - `Coaches`
+- `Locaties` (`locations`)
+- `Velden` (`fields`)
 
 Every entity must have its own dedicated database table.
 
@@ -50,6 +52,8 @@ Recommended entity mapping:
 - `Teams` -> teams
 - `Spelers` -> players
 - `Coaches` -> coaches
+- `Locaties` -> locations
+- `Velden` -> fields
 
 Note:
 
@@ -64,6 +68,8 @@ Use one table per entity, with the WordPress table prefix:
 - `{$wpdb->prefix}stamdata_teams`
 - `{$wpdb->prefix}stamdata_players`
 - `{$wpdb->prefix}stamdata_coaches`
+- `{$wpdb->prefix}stamdata_locations`
+- `{$wpdb->prefix}stamdata_fields`
 
 Use `dbDelta()` for creation and controlled upgrades.
 
@@ -173,6 +179,34 @@ Suggested columns:
 - `created_at` datetime
 - `updated_at` datetime
 
+### `stamdata_locations`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `name` varchar
+- `slug` varchar
+- `address` varchar, nullable
+- `city` varchar, nullable
+- `created_at` datetime
+- `updated_at` datetime
+
+`Locaties` are physical locations.
+
+### `stamdata_fields`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `location_id` bigint unsigned
+- `name` varchar
+- `slug` varchar
+- `sort_order` int, nullable
+- `created_at` datetime
+- `updated_at` datetime
+
+`Velden` are fields/courts/pitches that belong to a location.
+
 ## Relationships
 
 Use logical relationships in code, even if MySQL foreign keys are not enforced in every environment.
@@ -182,6 +216,7 @@ Recommended relationships:
 - players belong to teams
 - coaches can belong to teams
 - matches belong to a home team and an away team
+- fields belong to locations
 
 Avoid hard-coupling WordPress posts to the core data model unless there is a strong product reason.
 
@@ -219,6 +254,8 @@ wp-plugin-stamdata/
 │   │   ├── class-team-repository.php
 │   │   ├── class-player-repository.php
 │   │   ├── class-coach-repository.php
+│   │   ├── class-location-repository.php
+│   │   ├── class-field-repository.php
 │   │   └── class-match-repository.php
 │   ├── services/
 │   └── admin/
@@ -259,7 +296,7 @@ When admin screens are built:
 - provide helpful empty states and error messages
 - make it very clear whether an admin is editing `live` data or `test` data
 - optimize local/test editing flows so changing data is quick and low-friction
-- each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, and `Matches`
+- each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, `Locaties`, `Velden`, and `Matches`
 - use a dedicated list page per entity for overview and management
 - use a separate add/edit page for each entity instead of combining form editing into the list screen
 - keep add/edit pages out of the sidebar; only the entity overview/list page should appear in the menu
@@ -295,7 +332,7 @@ Production rule:
 ## Data Integrity Expectations
 
 - Create unique indexes where useful, such as team slugs
-- Add normal indexes for common lookups like `team_id` and match date
+- Add normal indexes for common lookups like `team_id`, `location_id`, and match date
 - If using `data_version`, include it in indexes where it affects common lookups
 - Handle deletion carefully; prefer soft constraints in logic over unsafe cascades
 - Think through what happens when a team is removed but players, coaches, or matches still reference it

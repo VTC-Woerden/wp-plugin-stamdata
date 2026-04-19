@@ -13,7 +13,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WP_PLUGIN_STAMDATA_VERSION', '0.1.0' );
-define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '2' );
+define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '3' );
 define( 'WP_PLUGIN_STAMDATA_FILE', __FILE__ );
 define( 'WP_PLUGIN_STAMDATA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WP_PLUGIN_STAMDATA_URL', plugin_dir_url( __FILE__ ) );
@@ -21,8 +21,12 @@ define( 'WP_PLUGIN_STAMDATA_URL', plugin_dir_url( __FILE__ ) );
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/class-schema.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/class-installer.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-team-repository.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-location-repository.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-field-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/class-settings-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/teams/class-team-admin-page.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/locations/class-location-admin-page.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/fields/class-field-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/class-plugin.php';
 
 register_activation_hook( WP_PLUGIN_STAMDATA_FILE, array( 'WP_Plugin_Stamdata_Installer', 'activate' ) );

@@ -27,11 +27,27 @@ class WP_Plugin_Stamdata_Plugin {
 	private $team_admin_page;
 
 	/**
+	 * Locations admin page.
+	 *
+	 * @var WP_Plugin_Stamdata_Location_Admin_Page
+	 */
+	private $location_admin_page;
+
+	/**
+	 * Fields admin page.
+	 *
+	 * @var WP_Plugin_Stamdata_Field_Admin_Page
+	 */
+	private $field_admin_page;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		$this->settings_admin_page = new WP_Plugin_Stamdata_Settings_Admin_Page();
 		$this->team_admin_page = new WP_Plugin_Stamdata_Team_Admin_Page( new WP_Plugin_Stamdata_Team_Repository() );
+		$this->location_admin_page = new WP_Plugin_Stamdata_Location_Admin_Page( new WP_Plugin_Stamdata_Location_Repository() );
+		$this->field_admin_page = new WP_Plugin_Stamdata_Field_Admin_Page( new WP_Plugin_Stamdata_Field_Repository(), new WP_Plugin_Stamdata_Location_Repository() );
 
 		add_action( 'plugins_loaded', array( $this, 'maybe_upgrade_schema' ) );
 		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
@@ -61,6 +77,8 @@ class WP_Plugin_Stamdata_Plugin {
 	public function register_admin_menu() {
 		$this->settings_admin_page->register_menu();
 		$this->team_admin_page->register_menu();
+		$this->location_admin_page->register_menu();
+		$this->field_admin_page->register_menu();
 	}
 
 	/**
@@ -71,6 +89,8 @@ class WP_Plugin_Stamdata_Plugin {
 	public function handle_admin_actions() {
 		$this->settings_admin_page->handle_request();
 		$this->team_admin_page->handle_request();
+		$this->location_admin_page->handle_request();
+		$this->field_admin_page->handle_request();
 	}
 
 	/**
@@ -81,5 +101,7 @@ class WP_Plugin_Stamdata_Plugin {
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
 		$this->team_admin_page->enqueue_assets( $hook_suffix );
+		$this->location_admin_page->enqueue_assets( $hook_suffix );
+		$this->field_admin_page->enqueue_assets( $hook_suffix );
 	}
 }
