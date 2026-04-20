@@ -1,0 +1,11 @@
+{
+    "name": "thierryrietveld/wp-plugin-stamdata",
+    "description": "Central master-data plugin for sports-related site data.",
+    "type": "project",
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "scripts": {
+        "test": "phpunit -c phpunit.xml.dist"
+    }
+}

@@ -400,6 +400,9 @@ Rules for future public API additions:
 - add helper functions for common lookup patterns instead of making consuming plugins compose raw repository calls
 - document new public helpers when they are introduced
 - prefer additive evolution; do not break existing public helpers without a compatibility layer
+- do not change the response shape of an existing public helper; if the response must change, add a new versioned helper instead of changing the old one in place
+- add or update automated tests for public helpers when their behavior or response contract changes
+- keep the Composer/PHPUnit test setup and CI workflow working when adding or changing tests so they run both locally and in the pipeline
 
 Avoid encouraging direct SQL queries from consuming plugins unless no internal API exists yet.
 
