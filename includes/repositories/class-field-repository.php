@@ -17,7 +17,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 		global $wpdb;
 
 		if ( '' === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$fields_table    = $this->get_table_name();
@@ -38,7 +38,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -56,7 +56,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -79,7 +79,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 				'name'          => $data['name'],
 				'slug'          => $data['slug'],
 				'sort_order'    => isset( $data['sort_order'] ) ? (int) $data['sort_order'] : 0,
-				'data_version'  => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version'  => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'created_at'    => $timestamp,
 				'updated_at'    => $timestamp,
 			),
@@ -103,7 +103,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 				'name'          => $data['name'],
 				'slug'          => $data['slug'],
 				'sort_order'    => isset( $data['sort_order'] ) ? (int) $data['sort_order'] : 0,
-				'data_version'  => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version'  => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'updated_at'    => current_time( 'mysql' ),
 			),
 			array( 'id' => $field_id ),
@@ -134,7 +134,7 @@ class WP_Plugin_Stamdata_Field_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(

@@ -57,7 +57,7 @@ class WP_Plugin_Stamdata_Field_Admin_Page {
 							<td><?php echo esc_html( $field['location_name'] ); ?></td>
 							<td><code><?php echo esc_html( $field['slug'] ); ?></code></td>
 							<td><?php echo esc_html( $field['sort_order'] ); ?></td>
-							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $field['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $field['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this field?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
+							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $field['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $field['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this field?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
 						</tr>
 					<?php endforeach; ?>
 					</tbody>
@@ -117,7 +117,7 @@ class WP_Plugin_Stamdata_Field_Admin_Page {
 			'slug'         => isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '',
 			'location_id'  => isset( $_POST['location_id'] ) ? absint( $_POST['location_id'] ) : 0,
 			'sort_order'   => isset( $_POST['sort_order'] ) ? intval( wp_unslash( $_POST['sort_order'] ) ) : 0,
-			'data_version' => wp_plugin_stamdata_get_active_data_version(),
+			'data_version' => stamdata_get_active_data_version(),
 		);
 		if ( '' === $data['name'] || '' === $data['slug'] || $data['location_id'] < 1 ) { $this->redirect_to_editor_with_notice( 'invalid', $field_id ); }
 		if ( ! $this->location_repository->get_by_id( $data['location_id'], $data['data_version'] ) ) { $this->redirect_to_editor_with_notice( 'invalid_location', $field_id ); }

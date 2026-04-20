@@ -97,11 +97,11 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 							?>
 							<tr>
 								<td><?php echo esc_html( $blueprint['name'] ); ?></td>
-								<td><?php echo esc_html( 'default' === $blueprint['week_type'] ? __( 'Default', 'wp-plugin-stamdata' ) : __( 'Exception', 'wp-plugin-stamdata' ) ); ?></td>
+								<td><?php echo esc_html( 'default' === $blueprint['week_type'] ? __( 'Standaard', 'wp-plugin-stamdata' ) : __( 'Afwijkend', 'wp-plugin-stamdata' ) ); ?></td>
 								<td><?php echo esc_html( 'default' === $blueprint['week_type'] ? __( 'Standard week', 'wp-plugin-stamdata' ) : sprintf( __( 'Week %d', 'wp-plugin-stamdata' ), (int) $blueprint['week_number'] ) ); ?></td>
 								<td><code><?php echo esc_html( $blueprint['slug'] ); ?></code></td>
 								<td><?php $this->render_blueprint_readonly_schedule( $blueprint_field_ids, $availability_by_field, $fields_by_id, $locations_by_id ); ?></td>
-								<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $blueprint['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $blueprint['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this blueprint?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
+								<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $blueprint['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $blueprint['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this blueprint?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -160,12 +160,12 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 								<th><label for="blueprint_week_type"><?php esc_html_e( 'Blueprint type', 'wp-plugin-stamdata' ); ?></label></th>
 								<td>
 									<select name="week_type" id="blueprint_week_type">
-										<option value="default" <?php selected( $blueprint['week_type'] ?? 'default', 'default' ); ?>><?php esc_html_e( 'Default week', 'wp-plugin-stamdata' ); ?></option>
-										<option value="exception" <?php selected( $blueprint['week_type'] ?? '', 'exception' ); ?>><?php esc_html_e( 'Exception week', 'wp-plugin-stamdata' ); ?></option>
+										<option value="default" <?php selected( $blueprint['week_type'] ?? 'default', 'default' ); ?>><?php esc_html_e( 'Standaard', 'wp-plugin-stamdata' ); ?></option>
+										<option value="exception" <?php selected( $blueprint['week_type'] ?? '', 'exception' ); ?>><?php esc_html_e( 'Afwijkend', 'wp-plugin-stamdata' ); ?></option>
 									</select>
 								</td>
 							</tr>
-							<tr><th><label for="blueprint_week_number"><?php esc_html_e( 'Week number', 'wp-plugin-stamdata' ); ?></label></th><td><select name="week_number" id="blueprint_week_number"><option value="0"><?php esc_html_e( 'Standard week', 'wp-plugin-stamdata' ); ?></option><?php for ( $week = 1; $week <= 53; $week++ ) : ?><option value="<?php echo esc_attr( $week ); ?>" <?php selected( isset( $blueprint['week_number'] ) ? (int) $blueprint['week_number'] : 0, $week ); ?>><?php echo esc_html( sprintf( __( 'Week %d', 'wp-plugin-stamdata' ), $week ) ); ?></option><?php endfor; ?></select><p class="description"><?php esc_html_e( 'Choose week 0/Standard week for the recurring default blueprint.', 'wp-plugin-stamdata' ); ?></p></td></tr>
+							<tr id="wp-plugin-stamdata-week-number-row" <?php if ( 'exception' !== ( $blueprint['week_type'] ?? 'default' ) ) : ?>style="display:none;"<?php endif; ?>><th><label for="blueprint_week_number"><?php esc_html_e( 'Week number', 'wp-plugin-stamdata' ); ?></label></th><td><select name="week_number" id="blueprint_week_number" <?php disabled( 'exception' !== ( $blueprint['week_type'] ?? 'default' ) ); ?>><option value="0"><?php esc_html_e( 'Choose a week', 'wp-plugin-stamdata' ); ?></option><?php for ( $week = 1; $week <= 53; $week++ ) : ?><option value="<?php echo esc_attr( $week ); ?>" <?php selected( isset( $blueprint['week_number'] ) ? (int) $blueprint['week_number'] : 0, $week ); ?>><?php echo esc_html( sprintf( __( 'Week %d', 'wp-plugin-stamdata' ), $week ) ); ?></option><?php endfor; ?></select><p class="description"><?php esc_html_e( 'Choose a specific week only for an exception blueprint.', 'wp-plugin-stamdata' ); ?></p></td></tr>
 							<tr><th><label for="blueprint_notes"><?php esc_html_e( 'Notes', 'wp-plugin-stamdata' ); ?></label></th><td><textarea name="notes" id="blueprint_notes" class="large-text" rows="4"><?php echo esc_textarea( $blueprint['notes'] ?? '' ); ?></textarea></td></tr>
 						</tbody>
 					</table>
@@ -231,14 +231,33 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 				<script>
 					document.addEventListener('DOMContentLoaded', function () {
 						var container = document.getElementById('wp-plugin-stamdata-blueprint-availability');
+						var weekTypeField = document.getElementById('blueprint_week_type');
+						var weekNumberRow = document.getElementById('wp-plugin-stamdata-week-number-row');
+						var weekNumberField = document.getElementById('blueprint_week_number');
 
 						if (!container) {
 							return;
 						}
 
 						var rowTemplates = <?php echo wp_json_encode( $this->get_availability_row_templates( $fields ) ); ?>;
+						var defaultRowTemplates = <?php echo wp_json_encode( $this->get_default_availability_row_templates( $fields ) ); ?>;
 						var fieldCheckboxes = document.querySelectorAll('.wp-plugin-stamdata-field-checkbox');
 						var noSelectedFields = document.getElementById('wp-plugin-stamdata-no-selected-fields');
+
+						function updateWeekNumberVisibility() {
+							if (!weekTypeField || !weekNumberRow || !weekNumberField) {
+								return;
+							}
+
+							var isException = weekTypeField.value === 'exception';
+
+							weekNumberRow.style.display = isException ? '' : 'none';
+							weekNumberField.disabled = !isException;
+
+							if (!isException) {
+								weekNumberField.value = '0';
+							}
+						}
 
 						function toggleFieldAvailability(fieldId, isSelected) {
 							var fieldSection = container.querySelector('.wp-plugin-stamdata-field-availability[data-field-id="' + fieldId + '"]');
@@ -248,6 +267,26 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 							}
 
 							fieldSection.style.display = isSelected ? '' : 'none';
+						}
+
+						function ensureDefaultAvailabilityForField(fieldId) {
+							[1, 2, 3, 4, 5].forEach(function (day) {
+								var templateKey = fieldId + ':' + day;
+								var dayContainer = container.querySelector('.wp-plugin-stamdata-availability-day-rows[data-field-id="' + fieldId + '"][data-day="' + day + '"]');
+
+								if (!dayContainer || dayContainer.querySelector('.wp-plugin-stamdata-availability-row') || !defaultRowTemplates[templateKey]) {
+									return;
+								}
+
+								dayContainer.insertAdjacentHTML('beforeend', defaultRowTemplates[templateKey]);
+
+								var daySection = dayContainer.closest('.wp-plugin-stamdata-availability-day');
+								var emptyState = daySection ? daySection.querySelector('.wp-plugin-stamdata-availability-empty') : null;
+
+								if (emptyState) {
+									emptyState.style.display = 'none';
+								}
+							});
 						}
 
 						function updateEmptyBlueprintState() {
@@ -267,9 +306,18 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 						fieldCheckboxes.forEach(function (checkbox) {
 							checkbox.addEventListener('change', function () {
 								toggleFieldAvailability(this.value, this.checked);
+
+								if (this.checked) {
+									ensureDefaultAvailabilityForField(this.value);
+								}
+
 								updateEmptyBlueprintState();
 							});
 						});
+
+						if (weekTypeField) {
+							weekTypeField.addEventListener('change', updateWeekNumberVisibility);
+						}
 
 						container.addEventListener('click', function (event) {
 							if (event.target.classList.contains('wp-plugin-stamdata-add-availability-row')) {
@@ -315,6 +363,7 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 							}
 						});
 
+						updateWeekNumberVisibility();
 						updateEmptyBlueprintState();
 					});
 				</script>
@@ -363,7 +412,7 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 			'week_type'    => in_array( $week_type, array( 'default', 'exception' ), true ) ? $week_type : 'default',
 			'week_number'  => 'exception' === $week_type ? $week_number : 0,
 			'notes'        => isset( $_POST['notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notes'] ) ) : '',
-			'data_version' => wp_plugin_stamdata_get_active_data_version(),
+			'data_version' => stamdata_get_active_data_version(),
 		);
 
 		if ( '' === $data['name'] || '' === $data['slug'] ) {
@@ -518,6 +567,20 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 
 			foreach ( array_keys( $this->get_day_options() ) as $day ) {
 				$templates[ $field_id . ':' . $day ] = $this->get_availability_row_html( $field_id, $day );
+			}
+		}
+
+		return $templates;
+	}
+
+	private function get_default_availability_row_templates( array $fields ) {
+		$templates = array();
+
+		foreach ( $fields as $field ) {
+			$field_id = (int) $field['id'];
+
+			foreach ( array( 1, 2, 3, 4, 5 ) as $day ) {
+				$templates[ $field_id . ':' . $day ] = $this->get_availability_row_html( $field_id, $day, '17:00', '22:30' );
 			}
 		}
 

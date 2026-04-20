@@ -13,7 +13,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WP_PLUGIN_STAMDATA_VERSION', '0.1.0' );
-define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '7' );
+define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '11' );
 define( 'WP_PLUGIN_STAMDATA_FILE', __FILE__ );
 define( 'WP_PLUGIN_STAMDATA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WP_PLUGIN_STAMDATA_URL', plugin_dir_url( __FILE__ ) );
@@ -25,6 +25,7 @@ require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-location-rep
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-field-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-blueprint-repository.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/repositories/class-blueprint-availability-repository.php';
+require_once WP_PLUGIN_STAMDATA_PATH . 'includes/services/class-team-importer.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/class-settings-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/teams/class-team-admin-page.php';
 require_once WP_PLUGIN_STAMDATA_PATH . 'includes/admin/locations/class-location-admin-page.php';
@@ -169,6 +170,43 @@ function stamdata_get_blueprint_availability_for_field( $blueprint_id, $field_id
 }
 
 /**
+ * Return blueprint timeslots for a given week number and weekday.
+ *
+ * Day number uses 0 = Monday through 6 = Sunday.
+ *
+ * @param int         $week_number  Week number (1-53).
+ * @param int         $day_number   Weekday number where Monday = 0.
+ * @param string|null $data_version Optional data version override.
+ * @return array
+ */
+function stamdata_get_blueprint_timeslots_for_day( $week_number, $day_number, $data_version = null ) {
+	$day_number = (int) $day_number;
+
+	if ( $day_number < 0 || $day_number > 6 ) {
+		return array();
+	}
+
+	$blueprint_repository    = new WP_Plugin_Stamdata_Blueprint_Repository();
+	$availability_repository = new WP_Plugin_Stamdata_Blueprint_Availability_Repository();
+	$blueprint               = $blueprint_repository->get_effective_for_week( (int) $week_number, $data_version );
+
+	if ( ! $blueprint || empty( $blueprint['id'] ) ) {
+		return array();
+	}
+
+	$effective_week_number = 'exception' === ( $blueprint['week_type'] ?? 'default' )
+		? (int) $blueprint['week_number']
+		: null;
+
+	return $availability_repository->get_for_blueprint_and_day(
+		(int) $blueprint['id'],
+		$day_number + 1,
+		$effective_week_number,
+		$data_version
+	);
+}
+
+/**
  * Return a single blueprint by ID.
  *
  * @param int         $blueprint_id  Blueprint ID.
@@ -237,8 +275,43 @@ function stamdata_get_blueprint_field_ids( $blueprint_id, $data_version = null )
  *
  * @return string
  */
-function wp_plugin_stamdata_get_active_data_version() {
+function stamdata_get_active_data_version() {
 	$data_version = get_option( 'wp_plugin_stamdata_active_data_version', 'live' );
 
 	return in_array( $data_version, array( 'live', 'test' ), true ) ? $data_version : 'live';
+}
+
+/**
+ * Return the stored Nevobo teams endpoint URL.
+ *
+ * @return string
+ */
+function stamdata_get_nevobo_teams_endpoint() {
+	$default = 'https://api.nevobo.nl/competitie/teams.jsonld';
+	$value   = get_option( 'wp_plugin_stamdata_nevobo_teams_endpoint', $default );
+
+	return is_string( $value ) && '' !== $value ? esc_url_raw( $value ) : $default;
+}
+
+/**
+ * Return the stored Nevobo vereniging path.
+ *
+ * @return string
+ */
+function stamdata_get_nevobo_vereniging_path() {
+	$default = '/relatiebeheer/verenigingen/ckl9x7n';
+	$value   = get_option( 'wp_plugin_stamdata_nevobo_vereniging_path', $default );
+
+	return is_string( $value ) && '' !== $value ? sanitize_text_field( $value ) : $default;
+}
+
+/**
+ * Return the stored Nevobo request limit.
+ *
+ * @return int
+ */
+function stamdata_get_nevobo_teams_limit() {
+	$value = (int) get_option( 'wp_plugin_stamdata_nevobo_teams_limit', 100 );
+
+	return $value > 0 ? $value : 100;
 }

@@ -132,9 +132,25 @@ Suggested columns:
 
 - `id` bigint unsigned, primary key
 - `name` varchar
+- `short_name` varchar, nullable
+- `sortable_rank` varchar, nullable
 - `slug` varchar
+- `image_id` bigint unsigned, nullable
+- `external_source` varchar, nullable
+- `external_id` varchar, nullable
+- `external_api_id` varchar, nullable
+- `data_version` varchar, default `live`
 - `created_at` datetime
 - `updated_at` datetime
+
+Notes:
+
+- imported teams should be able to store a stable external source and external ID
+- imported teams from Nevobo should also store the raw remote `@id` for traceability and debugging
+- teams should also store a `short_name`; for now this is the last 4 characters of the full name, for example `Quadrant Bouw VTC Woerden DS 1` -> `DS 1`
+- teams imported from Nevobo should also store `sortable_rank`, and overview tables should sort on this value before falling back to the team name
+- external imports must be idempotent, so repeated imports update existing rows instead of creating duplicates
+- if teams are synced from Nevobo or another source, prefer matching by external identifier first and slug second
 
 ### `stamdata_players`
 
@@ -377,6 +393,7 @@ Current public API direction:
 - `stamdata_get_blueprint_for_week( $week_number, $data_version = null )`
 - `stamdata_get_blueprint_availability( $blueprint_id, $week_number = null, $data_version = null )`
 - `stamdata_get_blueprint_availability_for_field( $blueprint_id, $field_id, $week_number = null, $data_version = null )`
+- `stamdata_get_blueprint_timeslots_for_day( $week_number, $day_number, $data_version = null )`
 - `stamdata_get_blueprint_location_ids( $blueprint_id, $data_version = null )`
 - `stamdata_get_blueprint_field_ids( $blueprint_id, $data_version = null )`
 
@@ -419,6 +436,7 @@ When admin screens are built:
 - the blueprint edit screen should behave like a week planner per selected veld: show all selected velden, then all weekdays for each veld, and allow multiple availability rows per weekday
 - `Blueprints` should let admins select only `Velden`; the UI should group them by `Locatie` so the location context stays visible without separate location checkboxes
 - `Blueprints` should use the same list page + separate edit page pattern as the other top-level entities
+- when a `Veld` is newly selected in the blueprint editor, prefill Monday through Friday with one default slot from `17:00` to `22:30`, but do not overwrite existing slots
 
 ## External API Sync
 
@@ -505,6 +523,7 @@ If the plugin is scaffolded from scratch, the recommended build order is:
 - This plugin is intended as a shared master-data foundation.
 - Favor stability and clarity over speed of implementation.
 - If you introduce schema changes, update migrations and version handling together.
+- If you introduce schema, API, importer, workflow, or architectural changes that affect how agents should work in this repo, update `AGENTS.md` in the same change.
 - If you introduce public helper functions or hooks, keep naming consistent and documented.
 - Keep the distinction between `live` and `test` data explicit in both schema and code paths.
 - On production, always assume the active dataset is `live`.

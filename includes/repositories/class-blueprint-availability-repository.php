@@ -17,7 +17,7 @@ class WP_Plugin_Stamdata_Blueprint_Availability_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$week_type = null === $week_number ? 'default' : 'exception';
@@ -42,11 +42,24 @@ class WP_Plugin_Stamdata_Blueprint_Availability_Repository {
 		);
 	}
 
+	public function get_for_blueprint_and_day( $blueprint_id, $day_of_week, $week_number = null, $data_version = null ) {
+		$rows = $this->get_for_blueprint( $blueprint_id, $week_number, $data_version );
+
+		return array_values(
+			array_filter(
+				$rows,
+				function ( $row ) use ( $day_of_week ) {
+					return isset( $row['day_of_week'] ) && (int) $row['day_of_week'] === (int) $day_of_week;
+				}
+			)
+		);
+	}
+
 	public function get_by_id( $availability_id, $data_version = null ) {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -74,7 +87,7 @@ class WP_Plugin_Stamdata_Blueprint_Availability_Repository {
 				'day_of_week'  => (int) $data['day_of_week'],
 				'start_time'   => $data['start_time'],
 				'end_time'     => $data['end_time'],
-				'data_version' => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'created_at'   => $timestamp,
 				'updated_at'   => $timestamp,
 			),
@@ -101,7 +114,7 @@ class WP_Plugin_Stamdata_Blueprint_Availability_Repository {
 				'day_of_week'  => (int) $data['day_of_week'],
 				'start_time'   => $data['start_time'],
 				'end_time'     => $data['end_time'],
-				'data_version' => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'updated_at'   => current_time( 'mysql' ),
 			),
 			array( 'id' => $availability_id ),
@@ -132,7 +145,7 @@ class WP_Plugin_Stamdata_Blueprint_Availability_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$delete_where = array(

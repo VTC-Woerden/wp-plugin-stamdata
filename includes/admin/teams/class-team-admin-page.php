@@ -20,12 +20,20 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 	private $repository;
 
 	/**
+	 * Team importer service.
+	 *
+	 * @var WP_Plugin_Stamdata_Team_Importer
+	 */
+	private $importer;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WP_Plugin_Stamdata_Team_Repository $repository Repository instance.
 	 */
 	public function __construct( WP_Plugin_Stamdata_Team_Repository $repository ) {
 		$this->repository = $repository;
+		$this->importer   = new WP_Plugin_Stamdata_Team_Importer( $repository );
 	}
 
 	/**
@@ -90,13 +98,19 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 			wp_die( esc_html__( 'You do not have permission to manage teams.', 'wp-plugin-stamdata' ) );
 		}
 
-		$active_version = wp_plugin_stamdata_get_active_data_version();
+		$active_version = stamdata_get_active_data_version();
 		$teams          = $this->repository->get_all( $active_version );
 
 		?>
 		<div class="wrap">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Teams', 'wp-plugin-stamdata' ); ?></h1>
 			<a href="<?php echo esc_url( $this->get_add_url() ); ?>" class="page-title-action"><?php esc_html_e( 'Add new', 'wp-plugin-stamdata' ); ?></a>
+			<form method="post" action="" style="display:inline-block;margin-left:8px;vertical-align:middle;">
+				<?php wp_nonce_field( 'wp_plugin_stamdata_import_teams', 'wp_plugin_stamdata_import_nonce' ); ?>
+				<input type="hidden" name="page" value="wp-plugin-stamdata-teams" />
+				<input type="hidden" name="stamdata_action" value="import_teams" />
+				<?php submit_button( __( 'Import from Nevobo', 'wp-plugin-stamdata' ), 'page-title-action', 'submit', false, array( 'style' => 'margin-left:0;' ) ); ?>
+			</form>
 			<hr class="wp-header-end" />
 			<p>
 				<?php
@@ -111,6 +125,18 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 			</p>
 
 			<?php $this->render_notices(); ?>
+			<p class="description">
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: 1: endpoint URL, 2: vereniging path. */
+						__( 'Import uses %1$s with vereniging %2$s. You can change these values on the Stamdata settings page.', 'wp-plugin-stamdata' ),
+						stamdata_get_nevobo_teams_endpoint(),
+						stamdata_get_nevobo_vereniging_path()
+					)
+				);
+				?>
+			</p>
 
 			<?php if ( empty( $teams ) ) : ?>
 				<p><?php esc_html_e( 'No teams found yet for the active dataset.', 'wp-plugin-stamdata' ); ?></p>
@@ -120,7 +146,10 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 						<tr>
 							<th><?php esc_html_e( 'Image', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th>
+							<th><?php esc_html_e( 'Short name', 'wp-plugin-stamdata' ); ?></th>
+							<th><?php esc_html_e( 'Sortable rank', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></th>
+							<th><?php esc_html_e( 'External API ID', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Updated', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th>
 						</tr>
@@ -130,12 +159,15 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 							<tr>
 								<td><?php echo wp_kses_post( $this->get_image_preview_html( isset( $team['image_id'] ) ? (int) $team['image_id'] : 0, 'thumbnail' ) ); ?></td>
 								<td><?php echo esc_html( $team['name'] ); ?></td>
+								<td><code><?php echo esc_html( isset( $team['short_name'] ) ? $team['short_name'] : '' ); ?></code></td>
+								<td><code><?php echo esc_html( isset( $team['sortable_rank'] ) ? $team['sortable_rank'] : '' ); ?></code></td>
 								<td><code><?php echo esc_html( $team['slug'] ); ?></code></td>
+								<td><code><?php echo esc_html( isset( $team['external_api_id'] ) ? $team['external_api_id'] : '' ); ?></code></td>
 								<td><?php echo esc_html( $team['updated_at'] ); ?></td>
 								<td>
 									<a href="<?php echo esc_url( $this->get_edit_url( (int) $team['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a>
 									|
-									<a href="<?php echo esc_url( $this->get_delete_url( (int) $team['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this team?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a>
+									<a href="<?php echo esc_url( $this->get_delete_url( (int) $team['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this team?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a>
 								</td>
 							</tr>
 						<?php endforeach; ?>
@@ -156,7 +188,7 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 			wp_die( esc_html__( 'You do not have permission to manage teams.', 'wp-plugin-stamdata' ) );
 		}
 
-		$active_version = wp_plugin_stamdata_get_active_data_version();
+		$active_version = stamdata_get_active_data_version();
 		$team_id        = isset( $_GET['team_id'] ) ? absint( $_GET['team_id'] ) : 0;
 		$edit_team      = null;
 		$image_id       = 0;
@@ -210,11 +242,45 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 						</tr>
 						<tr>
 							<th scope="row">
+								<label for="team_sortable_rank"><?php esc_html_e( 'Sortable rank', 'wp-plugin-stamdata' ); ?></label>
+							</th>
+							<td>
+								<input name="sortable_rank" id="team_sortable_rank" type="text" class="regular-text code" value="<?php echo esc_attr( $edit_team['sortable_rank'] ?? '' ); ?>" />
+								<p class="description"><?php esc_html_e( 'Teams overview is sorted by this value first, then by name.', 'wp-plugin-stamdata' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
 								<label for="team_slug"><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></label>
 							</th>
 							<td>
 								<input name="slug" id="team_slug" type="text" class="regular-text" required value="<?php echo esc_attr( $edit_team['slug'] ?? '' ); ?>" />
 								<p class="description"><?php esc_html_e( 'Used as the stable identifier for a team within this plugin.', 'wp-plugin-stamdata' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="team_external_source"><?php esc_html_e( 'External source', 'wp-plugin-stamdata' ); ?></label>
+							</th>
+							<td>
+								<input name="external_source" id="team_external_source" type="text" class="regular-text" value="<?php echo esc_attr( $edit_team['external_source'] ?? '' ); ?>" />
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="team_external_id"><?php esc_html_e( 'External ID', 'wp-plugin-stamdata' ); ?></label>
+							</th>
+							<td>
+								<input name="external_id" id="team_external_id" type="text" class="regular-text code" value="<?php echo esc_attr( $edit_team['external_id'] ?? '' ); ?>" />
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="team_external_api_id"><?php esc_html_e( 'External API ID', 'wp-plugin-stamdata' ); ?></label>
+							</th>
+							<td>
+								<input name="external_api_id" id="team_external_api_id" type="text" class="large-text code" value="<?php echo esc_attr( $edit_team['external_api_id'] ?? '' ); ?>" />
+								<p class="description"><?php esc_html_e( 'For Nevobo imports this stores the raw remote @id value.', 'wp-plugin-stamdata' ); ?></p>
 							</td>
 						</tr>
 						<tr>
@@ -305,9 +371,38 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 			$this->handle_save();
 		}
 
+		if ( isset( $_POST['stamdata_action'] ) && 'import_teams' === sanitize_key( wp_unslash( $_POST['stamdata_action'] ) ) ) {
+			$this->handle_import();
+		}
+
 		if ( isset( $_GET['action'] ) && 'delete' === sanitize_key( wp_unslash( $_GET['action'] ) ) ) {
 			$this->handle_delete();
 		}
+	}
+
+	/**
+	 * Handle team import requests.
+	 *
+	 * @return void
+	 */
+	private function handle_import() {
+		check_admin_referer( 'wp_plugin_stamdata_import_teams', 'wp_plugin_stamdata_import_nonce' );
+
+		$result = $this->importer->import_nevobo_teams( stamdata_get_active_data_version() );
+
+		if ( is_wp_error( $result ) ) {
+			$this->redirect_to_list_with_notice( 'import_error', array( 'error_detail' => $result->get_error_message() ) );
+		}
+
+		$this->redirect_to_list_with_notice(
+			'imported',
+			array(
+				'import_created' => $result['created'],
+				'import_updated' => $result['updated'],
+				'import_skipped' => $result['skipped'],
+				'import_total'   => $result['total'],
+			)
+		);
 	}
 
 	/**
@@ -322,16 +417,24 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 		$name     = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 		$raw_slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		$sortable_rank = isset( $_POST['sortable_rank'] ) ? sanitize_text_field( wp_unslash( $_POST['sortable_rank'] ) ) : '';
+		$external_source = isset( $_POST['external_source'] ) ? sanitize_text_field( wp_unslash( $_POST['external_source'] ) ) : '';
+		$external_id = isset( $_POST['external_id'] ) ? sanitize_text_field( wp_unslash( $_POST['external_id'] ) ) : '';
+		$external_api_id = isset( $_POST['external_api_id'] ) ? sanitize_text_field( wp_unslash( $_POST['external_api_id'] ) ) : '';
 
 		if ( '' === $name || '' === $raw_slug ) {
 			$this->redirect_to_editor_with_notice( 'invalid', $team_id );
 		}
 
 		$data = array(
-			'name'         => $name,
-			'slug'         => $raw_slug,
-			'image_id'     => $image_id,
-			'data_version' => wp_plugin_stamdata_get_active_data_version(),
+			'name'            => $name,
+			'slug'            => $raw_slug,
+			'image_id'        => $image_id,
+			'sortable_rank'   => $sortable_rank,
+			'external_source' => $external_source,
+			'external_id'     => $external_id,
+			'external_api_id' => $external_api_id,
+			'data_version'    => stamdata_get_active_data_version(),
 		);
 
 		$result = $team_id > 0
@@ -403,6 +506,22 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 			case 'not_found':
 				$type = 'error';
 				$text = __( 'The requested team could not be found in the active dataset.', 'wp-plugin-stamdata' );
+				break;
+			case 'imported':
+				$text = sprintf(
+					/* translators: 1: created count, 2: updated count, 3: skipped count, 4: total count. */
+					__( 'Nevobo import finished. Created: %1$d, updated: %2$d, skipped: %3$d, total received: %4$d.', 'wp-plugin-stamdata' ),
+					isset( $_GET['import_created'] ) ? absint( $_GET['import_created'] ) : 0,
+					isset( $_GET['import_updated'] ) ? absint( $_GET['import_updated'] ) : 0,
+					isset( $_GET['import_skipped'] ) ? absint( $_GET['import_skipped'] ) : 0,
+					isset( $_GET['import_total'] ) ? absint( $_GET['import_total'] ) : 0
+				);
+				break;
+			case 'import_error':
+				$type = 'error';
+				$text = isset( $_GET['error_detail'] )
+					? sanitize_text_field( wp_unslash( $_GET['error_detail'] ) )
+					: __( 'The Nevobo import failed.', 'wp-plugin-stamdata' );
 				break;
 		}
 
@@ -504,12 +623,15 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 	 * @param string $message Notice key.
 	 * @return void
 	 */
-	private function redirect_to_list_with_notice( $message ) {
+	private function redirect_to_list_with_notice( $message, array $extra_args = array() ) {
 		wp_safe_redirect(
 			add_query_arg(
-				array(
-					'page'    => 'wp-plugin-stamdata-teams',
-					'message' => $message,
+				array_merge(
+					array(
+						'page'    => 'wp-plugin-stamdata-teams',
+						'message' => $message,
+					),
+					$extra_args
 				),
 				admin_url( 'admin.php' )
 			)

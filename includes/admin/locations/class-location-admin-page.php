@@ -62,7 +62,7 @@ class WP_Plugin_Stamdata_Location_Admin_Page {
 							<td><code><?php echo esc_html( $location['slug'] ); ?></code></td>
 							<td><?php echo esc_html( $location['address'] ); ?></td>
 							<td><?php echo esc_html( $location['city'] ); ?></td>
-							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $location['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $location['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this location?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
+							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $location['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $location['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this location?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
 						</tr>
 					<?php endforeach; ?>
 					</tbody>
@@ -128,7 +128,7 @@ class WP_Plugin_Stamdata_Location_Admin_Page {
 			'slug'         => isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '',
 			'address'      => isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : '',
 			'city'         => isset( $_POST['city'] ) ? sanitize_text_field( wp_unslash( $_POST['city'] ) ) : '',
-			'data_version' => wp_plugin_stamdata_get_active_data_version(),
+			'data_version' => stamdata_get_active_data_version(),
 		);
 		if ( '' === $data['name'] || '' === $data['slug'] ) {
 			$this->redirect_to_editor_with_notice( 'invalid', $location_id );

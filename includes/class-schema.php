@@ -105,14 +105,24 @@ class WP_Plugin_Stamdata_Schema {
 		$sql = "CREATE TABLE {$table_name} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(191) NOT NULL,
+			short_name varchar(20) DEFAULT NULL,
+			sortable_rank varchar(20) DEFAULT NULL,
 			slug varchar(191) NOT NULL,
 			image_id bigint(20) unsigned DEFAULT NULL,
+			external_source varchar(50) DEFAULT NULL,
+			external_id varchar(191) DEFAULT NULL,
+			external_api_id varchar(191) DEFAULT NULL,
 			data_version varchar(20) NOT NULL DEFAULT 'live',
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY slug_version (slug, data_version),
+			UNIQUE KEY external_identifier (external_source, external_id, data_version),
+			KEY short_name (short_name),
+			KEY sortable_rank (sortable_rank),
 			KEY image_id (image_id),
+			KEY external_lookup (external_source, data_version),
+			KEY external_api_lookup (external_source, external_api_id, data_version),
 			KEY data_version (data_version)
 		) {$charset_collate};";
 

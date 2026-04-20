@@ -25,7 +25,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( '' === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -40,7 +40,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -58,7 +58,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -76,7 +76,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -105,7 +105,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -121,7 +121,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$sql = $wpdb->prepare(
@@ -145,7 +145,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 				'week_type'    => $data['week_type'],
 				'week_number'  => isset( $data['week_number'] ) ? (int) $data['week_number'] : 0,
 				'notes'        => empty( $data['notes'] ) ? null : $data['notes'],
-				'data_version' => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'created_at'   => $timestamp,
 				'updated_at'   => $timestamp,
 			),
@@ -170,7 +170,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 				'week_type'    => $data['week_type'],
 				'week_number'  => isset( $data['week_number'] ) ? (int) $data['week_number'] : 0,
 				'notes'        => empty( $data['notes'] ) ? null : $data['notes'],
-				'data_version' => empty( $data['data_version'] ) ? wp_plugin_stamdata_get_active_data_version() : $data['data_version'],
+				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'updated_at'   => current_time( 'mysql' ),
 			),
 			array( 'id' => $blueprint_id ),
@@ -203,7 +203,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$wpdb->delete(
@@ -236,7 +236,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 		global $wpdb;
 
 		if ( null === $data_version ) {
-			$data_version = wp_plugin_stamdata_get_active_data_version();
+			$data_version = stamdata_get_active_data_version();
 		}
 
 		$wpdb->delete(
