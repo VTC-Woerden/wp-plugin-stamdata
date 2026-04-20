@@ -1,3 +1,5 @@
+name: Deploy via SFTP
+
 on:
   workflow_dispatch:
 

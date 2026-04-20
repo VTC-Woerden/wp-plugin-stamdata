@@ -3,19 +3,7 @@
  * Tests for the stamdata_get_team() public API helper.
  */
 
-use PHPUnit\Framework\TestCase;
-
-final class StamdataGetTeamTest extends TestCase {
-
-	protected function setUp(): void {
-		parent::setUp();
-
-		$GLOBALS['wp_plugin_stamdata_test_options'] = array(
-			'wp_plugin_stamdata_active_data_version' => 'live',
-		);
-
-		$GLOBALS['wpdb'] = new WP_Plugin_Stamdata_Test_WPDB();
-	}
+final class StamdataGetTeamTest extends StamdataPublicApiTestCase {
 
 	public function test_it_returns_the_team_for_an_explicit_data_version(): void {
 		$GLOBALS['wpdb']->team_rows['test'][15] = array(
