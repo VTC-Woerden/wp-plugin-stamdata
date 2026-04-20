@@ -15,7 +15,8 @@ The plugin stores and exposes the following master data:
 - `Coaches`
 - `Locaties` (`locations`)
 - `Velden` (`fields`)
-- `Veld beschikbaarheid` (`field availability`)
+- `Blueprint beschikbaarheid` (`blueprint availability`)
+- `Blueprints`
 
 Every entity must have its own dedicated database table.
 
@@ -55,7 +56,8 @@ Recommended entity mapping:
 - `Coaches` -> coaches
 - `Locaties` -> locations
 - `Velden` -> fields
-- `Veld beschikbaarheid` -> field_availability
+- `Blueprint beschikbaarheid` -> blueprint_availability
+- `Blueprints` -> blueprints
 
 Note:
 
@@ -72,7 +74,10 @@ Use one table per entity, with the WordPress table prefix:
 - `{$wpdb->prefix}stamdata_coaches`
 - `{$wpdb->prefix}stamdata_locations`
 - `{$wpdb->prefix}stamdata_fields`
-- `{$wpdb->prefix}stamdata_field_availability`
+- `{$wpdb->prefix}stamdata_blueprints`
+- `{$wpdb->prefix}stamdata_blueprint_availability`
+- `{$wpdb->prefix}stamdata_blueprint_locations`
+- `{$wpdb->prefix}stamdata_blueprint_fields`
 
 Use `dbDelta()` for creation and controlled upgrades.
 
@@ -210,11 +215,12 @@ Suggested columns:
 
 `Velden` are fields/courts/pitches that belong to a location.
 
-### `stamdata_field_availability`
+### `stamdata_blueprint_availability`
 
 Suggested columns:
 
 - `id` bigint unsigned, primary key
+- `blueprint_id` bigint unsigned
 - `field_id` bigint unsigned
 - `week_type` varchar
 - `week_number` tinyint unsigned, nullable
@@ -224,14 +230,62 @@ Suggested columns:
 - `created_at` datetime
 - `updated_at` datetime
 
-`Veld beschikbaarheid` stores the recurring weekly training availability of a field.
+`Blueprint beschikbaarheid` stores the recurring weekly training availability of a blueprint per selected veld.
 
 Rules:
 
 - the standard/default availability should represent the normal recurring weekly schedule
 - exception weeks can override or supplement the default schedule for a selected week number
 - week selection is required when managing exception weeks
-- this is a child entity of `Velden`, not a standalone top-level sidebar entity
+- this is a child entity of `Blueprints`, not a standalone top-level sidebar entity
+- availability should be managed inline on the blueprint add/edit screen, not on a separate availability screen
+- availability rows must belong to both a blueprint and a selected veld
+- the editor should be organized per selected veld, and each veld must support multiple availability time slots per weekday
+
+### `stamdata_blueprints`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `name` varchar
+- `slug` varchar
+- `week_type` varchar
+- `week_number` tinyint unsigned
+- `notes` text, nullable
+- `created_at` datetime
+- `updated_at` datetime
+
+### `stamdata_blueprint_locations`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `blueprint_id` bigint unsigned
+- `location_id` bigint unsigned
+- `created_at` datetime
+- `updated_at` datetime
+
+### `stamdata_blueprint_fields`
+
+Suggested columns:
+
+- `id` bigint unsigned, primary key
+- `blueprint_id` bigint unsigned
+- `field_id` bigint unsigned
+- `created_at` datetime
+- `updated_at` datetime
+
+`Blueprints` are weekly planning entities.
+
+Rules:
+
+- a blueprint always describes a week-level planning situation
+- one default blueprint should represent the normal recurring setup for most weeks
+- exception blueprints are used only for specific weeks where the normal setup is not valid
+- a blueprint decides which velden are available in that week
+- locaties in a blueprint are derived from the selected velden and should be shown as context in the UI rather than selected separately
+- blueprint availability belongs to the blueprint and to the selected fields inside that blueprint
+- if a specific week has no exception blueprint, consumers should fall back to the default blueprint
 
 ## Relationships
 
@@ -243,7 +297,9 @@ Recommended relationships:
 - coaches can belong to teams
 - matches belong to a home team and an away team
 - fields belong to locations
-- field availability belongs to fields
+- blueprint availability belongs to blueprints and fields
+- blueprint locations belong to blueprints
+- blueprint fields belong to blueprints
 
 Avoid hard-coupling WordPress posts to the core data model unless there is a strong product reason.
 
@@ -283,6 +339,7 @@ wp-plugin-stamdata/
 │   │   ├── class-coach-repository.php
 │   │   ├── class-location-repository.php
 │   │   ├── class-field-repository.php
+│   │   ├── class-blueprint-repository.php
 │   │   └── class-match-repository.php
 │   ├── services/
 │   └── admin/
@@ -315,7 +372,13 @@ Current public API direction:
 - `stamdata_get_field( $id, $data_version = null )`
 - `stamdata_get_fields( $data_version = null )`
 - `stamdata_get_fields_by_location( $location_id, $data_version = null )`
-- `stamdata_get_field_availability( $field_id, $week_number = null, $data_version = null )`
+- `stamdata_get_blueprint( $id, $data_version = null )`
+- `stamdata_get_blueprints( $data_version = null )`
+- `stamdata_get_blueprint_for_week( $week_number, $data_version = null )`
+- `stamdata_get_blueprint_availability( $blueprint_id, $week_number = null, $data_version = null )`
+- `stamdata_get_blueprint_availability_for_field( $blueprint_id, $field_id, $week_number = null, $data_version = null )`
+- `stamdata_get_blueprint_location_ids( $blueprint_id, $data_version = null )`
+- `stamdata_get_blueprint_field_ids( $blueprint_id, $data_version = null )`
 
 Rules for future public API additions:
 
@@ -345,14 +408,17 @@ When admin screens are built:
 - provide helpful empty states and error messages
 - make it very clear whether an admin is editing `live` data or `test` data
 - optimize local/test editing flows so changing data is quick and low-friction
-- each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, `Locaties`, `Velden`, and `Matches`
-- child entities like `Veld beschikbaarheid` may live under a parent entity workflow instead of having their own sidebar entry
+- each entity should have its own admin area and submenu entry, for example `Teams`, `Players`, `Coaches`, `Locaties`, `Velden`, `Blueprints`, and `Matches`
+- child entities like `Blueprint beschikbaarheid` may live under a parent entity workflow instead of having their own sidebar entry
 - use a dedicated list page per entity for overview and management
 - use a separate add/edit page for each entity instead of combining form editing into the list screen
 - keep add/edit pages out of the sidebar; only the entity overview/list page should appear in the menu
 - provide an `Add new` button from the entity list page and `Edit` links from the table/list rows
 - future entities should follow the same admin UX pattern as `Teams`
-- `Veld beschikbaarheid` should be managed from within `Velden` as a separate hidden page/view, with week selection on the screen itself
+- `Blueprint beschikbaarheid` should be managed inline inside the `Blueprint` add/edit screen
+- the blueprint edit screen should behave like a week planner per selected veld: show all selected velden, then all weekdays for each veld, and allow multiple availability rows per weekday
+- `Blueprints` should let admins select only `Velden`; the UI should group them by `Locatie` so the location context stays visible without separate location checkboxes
+- `Blueprints` should use the same list page + separate edit page pattern as the other top-level entities
 
 ## External API Sync
 
@@ -385,6 +451,7 @@ Production rule:
 - Create unique indexes where useful, such as team slugs
 - Add normal indexes for common lookups like `team_id`, `location_id`, and match date
 - Add normal indexes for common lookups like `team_id`, `location_id`, `field_id`, and match date
+- Add normal indexes for common lookups like `team_id`, `location_id`, `field_id`, `blueprint_id`, and match date
 - If using `data_version`, include it in indexes where it affects common lookups
 - Handle deletion carefully; prefer soft constraints in logic over unsafe cascades
 - Think through what happens when a team is removed but players, coaches, or matches still reference it

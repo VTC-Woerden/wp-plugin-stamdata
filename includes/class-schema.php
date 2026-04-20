@@ -46,14 +46,47 @@ class WP_Plugin_Stamdata_Schema {
 	}
 
 	/**
-	 * Return the field availability table name.
+	 * Return the blueprint availability table name.
 	 *
 	 * @return string
 	 */
-	public static function get_field_availability_table_name() {
+	public static function get_blueprint_availability_table_name() {
 		global $wpdb;
 
-		return $wpdb->prefix . 'stamdata_field_availability';
+		return $wpdb->prefix . 'stamdata_blueprint_availability';
+	}
+
+	/**
+	 * Return the blueprints table name.
+	 *
+	 * @return string
+	 */
+	public static function get_blueprints_table_name() {
+		global $wpdb;
+
+		return $wpdb->prefix . 'stamdata_blueprints';
+	}
+
+	/**
+	 * Return the blueprint locations table name.
+	 *
+	 * @return string
+	 */
+	public static function get_blueprint_locations_table_name() {
+		global $wpdb;
+
+		return $wpdb->prefix . 'stamdata_blueprint_locations';
+	}
+
+	/**
+	 * Return the blueprint fields table name.
+	 *
+	 * @return string
+	 */
+	public static function get_blueprint_fields_table_name() {
+		global $wpdb;
+
+		return $wpdb->prefix . 'stamdata_blueprint_fields';
 	}
 
 	/**
@@ -120,10 +153,11 @@ class WP_Plugin_Stamdata_Schema {
 
 		dbDelta( $fields_sql );
 
-		$availability_table = self::get_field_availability_table_name();
+		$availability_table = self::get_blueprint_availability_table_name();
 		$availability_sql   = "CREATE TABLE {$availability_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-			field_id bigint(20) unsigned NOT NULL,
+			blueprint_id bigint(20) unsigned NOT NULL,
+			field_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			week_type varchar(20) NOT NULL DEFAULT 'default',
 			week_number tinyint(3) unsigned DEFAULT NULL,
 			day_of_week tinyint(1) unsigned NOT NULL,
@@ -133,11 +167,65 @@ class WP_Plugin_Stamdata_Schema {
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
+			KEY blueprint_id (blueprint_id),
 			KEY field_id (field_id),
-			KEY week_lookup (field_id, week_type, week_number, data_version),
+			KEY week_lookup (blueprint_id, field_id, week_type, week_number, data_version),
 			KEY data_version (data_version)
 		) {$charset_collate};";
 
 		dbDelta( $availability_sql );
+
+		$blueprints_table = self::get_blueprints_table_name();
+		$blueprints_sql   = "CREATE TABLE {$blueprints_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			name varchar(191) NOT NULL,
+			slug varchar(191) NOT NULL,
+			week_type varchar(20) NOT NULL DEFAULT 'default',
+			week_number tinyint(3) unsigned NOT NULL DEFAULT 0,
+			notes text DEFAULT NULL,
+			data_version varchar(20) NOT NULL DEFAULT 'live',
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY slug_version (slug, data_version),
+			UNIQUE KEY week_scope (week_type, week_number, data_version),
+			KEY data_version (data_version)
+		) {$charset_collate};";
+
+		dbDelta( $blueprints_sql );
+
+		$blueprint_locations_table = self::get_blueprint_locations_table_name();
+		$blueprint_locations_sql   = "CREATE TABLE {$blueprint_locations_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			blueprint_id bigint(20) unsigned NOT NULL,
+			location_id bigint(20) unsigned NOT NULL,
+			data_version varchar(20) NOT NULL DEFAULT 'live',
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY blueprint_location (blueprint_id, location_id, data_version),
+			KEY blueprint_id (blueprint_id),
+			KEY location_id (location_id),
+			KEY data_version (data_version)
+		) {$charset_collate};";
+
+		dbDelta( $blueprint_locations_sql );
+
+		$blueprint_fields_table = self::get_blueprint_fields_table_name();
+		$blueprint_fields_sql   = "CREATE TABLE {$blueprint_fields_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			blueprint_id bigint(20) unsigned NOT NULL,
+			field_id bigint(20) unsigned NOT NULL,
+			data_version varchar(20) NOT NULL DEFAULT 'live',
+			created_at datetime NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY blueprint_field (blueprint_id, field_id, data_version),
+			KEY blueprint_id (blueprint_id),
+			KEY field_id (field_id),
+			KEY data_version (data_version)
+		) {$charset_collate};";
+
+		dbDelta( $blueprint_fields_sql );
 	}
 }

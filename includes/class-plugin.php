@@ -41,6 +41,13 @@ class WP_Plugin_Stamdata_Plugin {
 	private $field_admin_page;
 
 	/**
+	 * Blueprints admin page.
+	 *
+	 * @var WP_Plugin_Stamdata_Blueprint_Admin_Page
+	 */
+	private $blueprint_admin_page;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -48,6 +55,7 @@ class WP_Plugin_Stamdata_Plugin {
 		$this->team_admin_page = new WP_Plugin_Stamdata_Team_Admin_Page( new WP_Plugin_Stamdata_Team_Repository() );
 		$this->location_admin_page = new WP_Plugin_Stamdata_Location_Admin_Page( new WP_Plugin_Stamdata_Location_Repository() );
 		$this->field_admin_page = new WP_Plugin_Stamdata_Field_Admin_Page( new WP_Plugin_Stamdata_Field_Repository(), new WP_Plugin_Stamdata_Location_Repository() );
+		$this->blueprint_admin_page = new WP_Plugin_Stamdata_Blueprint_Admin_Page( new WP_Plugin_Stamdata_Blueprint_Repository() );
 
 		add_action( 'plugins_loaded', array( $this, 'maybe_upgrade_schema' ) );
 		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
@@ -79,6 +87,7 @@ class WP_Plugin_Stamdata_Plugin {
 		$this->team_admin_page->register_menu();
 		$this->location_admin_page->register_menu();
 		$this->field_admin_page->register_menu();
+		$this->blueprint_admin_page->register_menu();
 	}
 
 	/**
@@ -91,6 +100,7 @@ class WP_Plugin_Stamdata_Plugin {
 		$this->team_admin_page->handle_request();
 		$this->location_admin_page->handle_request();
 		$this->field_admin_page->handle_request();
+		$this->blueprint_admin_page->handle_request();
 	}
 
 	/**
@@ -103,5 +113,6 @@ class WP_Plugin_Stamdata_Plugin {
 		$this->team_admin_page->enqueue_assets( $hook_suffix );
 		$this->location_admin_page->enqueue_assets( $hook_suffix );
 		$this->field_admin_page->enqueue_assets( $hook_suffix );
+		$this->blueprint_admin_page->enqueue_assets( $hook_suffix );
 	}
 }
