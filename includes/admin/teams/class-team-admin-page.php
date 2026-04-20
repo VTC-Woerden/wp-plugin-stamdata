@@ -148,7 +148,6 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 							<th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Short name', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Sortable rank', 'wp-plugin-stamdata' ); ?></th>
-							<th><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'External API ID', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Updated', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th>
@@ -161,7 +160,6 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 								<td><?php echo esc_html( $team['name'] ); ?></td>
 								<td><code><?php echo esc_html( isset( $team['short_name'] ) ? $team['short_name'] : '' ); ?></code></td>
 								<td><code><?php echo esc_html( isset( $team['sortable_rank'] ) ? $team['sortable_rank'] : '' ); ?></code></td>
-								<td><code><?php echo esc_html( $team['slug'] ); ?></code></td>
 								<td><code><?php echo esc_html( isset( $team['external_api_id'] ) ? $team['external_api_id'] : '' ); ?></code></td>
 								<td><?php echo esc_html( $team['updated_at'] ); ?></td>
 								<td>
@@ -247,15 +245,6 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 							<td>
 								<input name="sortable_rank" id="team_sortable_rank" type="text" class="regular-text code" value="<?php echo esc_attr( $edit_team['sortable_rank'] ?? '' ); ?>" />
 								<p class="description"><?php esc_html_e( 'Teams overview is sorted by this value first, then by name.', 'wp-plugin-stamdata' ); ?></p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="team_slug"><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></label>
-							</th>
-							<td>
-								<input name="slug" id="team_slug" type="text" class="regular-text" required value="<?php echo esc_attr( $edit_team['slug'] ?? '' ); ?>" />
-								<p class="description"><?php esc_html_e( 'Used as the stable identifier for a team within this plugin.', 'wp-plugin-stamdata' ); ?></p>
 							</td>
 						</tr>
 						<tr>
@@ -415,20 +404,18 @@ class WP_Plugin_Stamdata_Team_Admin_Page {
 
 		$team_id  = isset( $_POST['team_id'] ) ? absint( $_POST['team_id'] ) : 0;
 		$name     = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
-		$raw_slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
 		$sortable_rank = isset( $_POST['sortable_rank'] ) ? sanitize_text_field( wp_unslash( $_POST['sortable_rank'] ) ) : '';
 		$external_source = isset( $_POST['external_source'] ) ? sanitize_text_field( wp_unslash( $_POST['external_source'] ) ) : '';
 		$external_id = isset( $_POST['external_id'] ) ? sanitize_text_field( wp_unslash( $_POST['external_id'] ) ) : '';
 		$external_api_id = isset( $_POST['external_api_id'] ) ? sanitize_text_field( wp_unslash( $_POST['external_api_id'] ) ) : '';
 
-		if ( '' === $name || '' === $raw_slug ) {
+		if ( '' === $name ) {
 			$this->redirect_to_editor_with_notice( 'invalid', $team_id );
 		}
 
 		$data = array(
 			'name'            => $name,
-			'slug'            => $raw_slug,
 			'image_id'        => $image_id,
 			'sortable_rank'   => $sortable_rank,
 			'external_source' => $external_source,

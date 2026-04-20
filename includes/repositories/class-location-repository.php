@@ -54,14 +54,13 @@ class WP_Plugin_Stamdata_Location_Repository {
 			$this->get_table_name(),
 			array(
 				'name'         => $data['name'],
-				'slug'         => $data['slug'],
 				'address'      => empty( $data['address'] ) ? null : $data['address'],
 				'city'         => empty( $data['city'] ) ? null : $data['city'],
 				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'created_at'   => $timestamp,
 				'updated_at'   => $timestamp,
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( false === $inserted ) {
@@ -78,14 +77,13 @@ class WP_Plugin_Stamdata_Location_Repository {
 			$this->get_table_name(),
 			array(
 				'name'         => $data['name'],
-				'slug'         => $data['slug'],
 				'address'      => empty( $data['address'] ) ? null : $data['address'],
 				'city'         => empty( $data['city'] ) ? null : $data['city'],
 				'data_version' => empty( $data['data_version'] ) ? stamdata_get_active_data_version() : $data['data_version'],
 				'updated_at'   => current_time( 'mysql' ),
 			),
 			array( 'id' => $location_id ),
-			array( '%s', '%s', '%s', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

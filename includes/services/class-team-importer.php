@@ -174,7 +174,6 @@ class WP_Plugin_Stamdata_Team_Importer {
 			'name'            => $name,
 			'short_name'      => $this->extract_short_name( $name ),
 			'sortable_rank'   => $sortable_rank,
-			'slug'            => $this->build_slug( $item, $name, $external_id, $data_version ),
 			'image_id'        => 0,
 			'data_version'    => $data_version,
 			'external_source' => 'nevobo',
@@ -232,32 +231,6 @@ class WP_Plugin_Stamdata_Team_Importer {
 		}
 
 		return substr( $name, -4 );
-	}
-
-	/**
-	 * Build a stable slug for imported teams.
-	 *
-	 * @param array  $item         Remote team payload.
-	 * @param string $name         Team name.
-	 * @param string $external_id  Remote team ID.
-	 * @param string $data_version Target dataset.
-	 * @return string
-	 */
-	private function build_slug( array $item, $name, $external_id, $data_version ) {
-		$raw_slug = $this->first_string_value( $item, array( 'slug' ) );
-		$slug     = '' !== $raw_slug ? sanitize_title( $raw_slug ) : sanitize_title( $name );
-
-		if ( '' === $slug && '' !== $external_id ) {
-			$slug = 'team-' . sanitize_title( $external_id );
-		}
-
-		$existing = $this->repository->get_by_slug( $slug, $data_version );
-
-		if ( ! $existing || ( isset( $existing['external_id'] ) && $existing['external_id'] === $external_id ) ) {
-			return $slug;
-		}
-
-		return $slug . '-' . sanitize_title( $external_id );
 	}
 
 	/**

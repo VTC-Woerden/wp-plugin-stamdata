@@ -141,7 +141,6 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 			$this->get_table_name(),
 			array(
 				'name'         => $data['name'],
-				'slug'         => $data['slug'],
 				'week_type'    => $data['week_type'],
 				'week_number'  => isset( $data['week_number'] ) ? (int) $data['week_number'] : 0,
 				'notes'        => empty( $data['notes'] ) ? null : $data['notes'],
@@ -149,7 +148,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 				'created_at'   => $timestamp,
 				'updated_at'   => $timestamp,
 			),
-			array( '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%d', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( false === $inserted ) {
@@ -166,7 +165,6 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 			$this->get_table_name(),
 			array(
 				'name'         => $data['name'],
-				'slug'         => $data['slug'],
 				'week_type'    => $data['week_type'],
 				'week_number'  => isset( $data['week_number'] ) ? (int) $data['week_number'] : 0,
 				'notes'        => empty( $data['notes'] ) ? null : $data['notes'],
@@ -174,7 +172,7 @@ class WP_Plugin_Stamdata_Blueprint_Repository {
 				'updated_at'   => current_time( 'mysql' ),
 			),
 			array( 'id' => $blueprint_id ),
-			array( '%s', '%s', '%s', '%d', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%d', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

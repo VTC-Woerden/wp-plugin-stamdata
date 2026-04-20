@@ -107,7 +107,6 @@ class WP_Plugin_Stamdata_Schema {
 			name varchar(191) NOT NULL,
 			short_name varchar(20) DEFAULT NULL,
 			sortable_rank varchar(20) DEFAULT NULL,
-			slug varchar(191) NOT NULL,
 			image_id bigint(20) unsigned DEFAULT NULL,
 			external_source varchar(50) DEFAULT NULL,
 			external_id varchar(191) DEFAULT NULL,
@@ -116,7 +115,6 @@ class WP_Plugin_Stamdata_Schema {
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
-			UNIQUE KEY slug_version (slug, data_version),
 			UNIQUE KEY external_identifier (external_source, external_id, data_version),
 			KEY short_name (short_name),
 			KEY sortable_rank (sortable_rank),
@@ -132,14 +130,12 @@ class WP_Plugin_Stamdata_Schema {
 		$locations_sql   = "CREATE TABLE {$locations_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(191) NOT NULL,
-			slug varchar(191) NOT NULL,
 			address varchar(191) DEFAULT NULL,
 			city varchar(191) DEFAULT NULL,
 			data_version varchar(20) NOT NULL DEFAULT 'live',
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
-			UNIQUE KEY slug_version (slug, data_version),
 			KEY data_version (data_version)
 		) {$charset_collate};";
 
@@ -150,13 +146,11 @@ class WP_Plugin_Stamdata_Schema {
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			location_id bigint(20) unsigned NOT NULL,
 			name varchar(191) NOT NULL,
-			slug varchar(191) NOT NULL,
 			sort_order int(11) NOT NULL DEFAULT 0,
 			data_version varchar(20) NOT NULL DEFAULT 'live',
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
-			UNIQUE KEY slug_version (slug, data_version),
 			KEY location_id (location_id),
 			KEY data_version (data_version)
 		) {$charset_collate};";
@@ -189,7 +183,6 @@ class WP_Plugin_Stamdata_Schema {
 		$blueprints_sql   = "CREATE TABLE {$blueprints_table} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(191) NOT NULL,
-			slug varchar(191) NOT NULL,
 			week_type varchar(20) NOT NULL DEFAULT 'default',
 			week_number tinyint(3) unsigned NOT NULL DEFAULT 0,
 			notes text DEFAULT NULL,
@@ -197,12 +190,13 @@ class WP_Plugin_Stamdata_Schema {
 			created_at datetime NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
-			UNIQUE KEY slug_version (slug, data_version),
 			UNIQUE KEY week_scope (week_type, week_number, data_version),
 			KEY data_version (data_version)
 		) {$charset_collate};";
 
 		dbDelta( $blueprints_sql );
+
+		self::drop_legacy_slug_columns();
 
 		$blueprint_locations_table = self::get_blueprint_locations_table_name();
 		$blueprint_locations_sql   = "CREATE TABLE {$blueprint_locations_table} (
@@ -237,5 +231,35 @@ class WP_Plugin_Stamdata_Schema {
 		) {$charset_collate};";
 
 		dbDelta( $blueprint_fields_sql );
+	}
+
+	/**
+	 * Remove deprecated slug columns and indexes from current tables.
+	 *
+	 * @return void
+	 */
+	private static function drop_legacy_slug_columns() {
+		global $wpdb;
+
+		$tables = array(
+			self::get_teams_table_name(),
+			self::get_locations_table_name(),
+			self::get_fields_table_name(),
+			self::get_blueprints_table_name(),
+		);
+
+		foreach ( $tables as $table_name ) {
+			$slug_column_exists = $wpdb->get_var(
+				$wpdb->prepare(
+					"SHOW COLUMNS FROM {$table_name} LIKE %s",
+					'slug'
+				)
+			);
+
+			if ( $slug_column_exists ) {
+				$wpdb->query( "ALTER TABLE {$table_name} DROP INDEX slug_version" );
+				$wpdb->query( "ALTER TABLE {$table_name} DROP COLUMN slug" );
+			}
+		}
 	}
 }

@@ -49,13 +49,12 @@ class WP_Plugin_Stamdata_Field_Admin_Page {
 				<p><?php esc_html_e( 'No fields found yet for the active dataset.', 'wp-plugin-stamdata' ); ?></p>
 			<?php else : ?>
 				<table class="widefat striped">
-					<thead><tr><th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Location', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Order', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th></tr></thead>
+					<thead><tr><th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Location', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Order', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th></tr></thead>
 					<tbody>
 					<?php foreach ( $fields as $field ) : ?>
 						<tr>
 							<td><?php echo esc_html( $field['name'] ); ?></td>
 							<td><?php echo esc_html( $field['location_name'] ); ?></td>
-							<td><code><?php echo esc_html( $field['slug'] ); ?></code></td>
 							<td><?php echo esc_html( $field['sort_order'] ); ?></td>
 							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $field['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $field['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this field?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
 						</tr>
@@ -89,7 +88,6 @@ class WP_Plugin_Stamdata_Field_Admin_Page {
 				<?php if ( $field ) : ?><input type="hidden" name="field_id" value="<?php echo esc_attr( $field['id'] ); ?>" /><?php endif; ?>
 				<table class="form-table" role="presentation"><tbody>
 					<tr><th><label for="field_name"><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></label></th><td><input name="name" id="field_name" type="text" class="regular-text" required value="<?php echo esc_attr( $field['name'] ?? '' ); ?>" /></td></tr>
-					<tr><th><label for="field_slug"><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></label></th><td><input name="slug" id="field_slug" type="text" class="regular-text" required value="<?php echo esc_attr( $field['slug'] ?? '' ); ?>" /></td></tr>
 					<tr><th><label for="field_location_id"><?php esc_html_e( 'Locatie', 'wp-plugin-stamdata' ); ?></label></th><td><select name="location_id" id="field_location_id" required><?php foreach ( $locations as $location ) : ?><option value="<?php echo esc_attr( $location['id'] ); ?>" <?php selected( isset( $field['location_id'] ) ? (int) $field['location_id'] : 0, (int) $location['id'] ); ?>><?php echo esc_html( $location['name'] ); ?></option><?php endforeach; ?></select></td></tr>
 					<tr><th><label for="field_sort_order"><?php esc_html_e( 'Sort order', 'wp-plugin-stamdata' ); ?></label></th><td><input name="sort_order" id="field_sort_order" type="number" class="small-text" value="<?php echo esc_attr( $field['sort_order'] ?? 0 ); ?>" /></td></tr>
 				</tbody></table>
@@ -114,12 +112,11 @@ class WP_Plugin_Stamdata_Field_Admin_Page {
 		$field_id = isset( $_POST['field_id'] ) ? absint( $_POST['field_id'] ) : 0;
 		$data = array(
 			'name'         => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
-			'slug'         => isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '',
 			'location_id'  => isset( $_POST['location_id'] ) ? absint( $_POST['location_id'] ) : 0,
 			'sort_order'   => isset( $_POST['sort_order'] ) ? intval( wp_unslash( $_POST['sort_order'] ) ) : 0,
 			'data_version' => stamdata_get_active_data_version(),
 		);
-		if ( '' === $data['name'] || '' === $data['slug'] || $data['location_id'] < 1 ) { $this->redirect_to_editor_with_notice( 'invalid', $field_id ); }
+		if ( '' === $data['name'] || $data['location_id'] < 1 ) { $this->redirect_to_editor_with_notice( 'invalid', $field_id ); }
 		if ( ! $this->location_repository->get_by_id( $data['location_id'], $data['data_version'] ) ) { $this->redirect_to_editor_with_notice( 'invalid_location', $field_id ); }
 		$result = $field_id ? $this->repository->update( $field_id, $data ) : $this->repository->create( $data );
 		if ( is_wp_error( $result ) ) { $this->redirect_to_editor_with_notice( 'error', $field_id ); }

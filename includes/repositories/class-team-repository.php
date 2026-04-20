@@ -72,33 +72,6 @@ class WP_Plugin_Stamdata_Team_Repository {
 	}
 
 	/**
-	 * Fetch a team by slug.
-	 *
-	 * @param string      $slug         Team slug.
-	 * @param string|null $data_version Optional data version filter.
-	 * @return array|null
-	 */
-	public function get_by_slug( $slug, $data_version = null ) {
-		global $wpdb;
-
-		$table_name = $this->get_table_name();
-
-		if ( null === $data_version ) {
-			$data_version = stamdata_get_active_data_version();
-		}
-
-		$sql = $wpdb->prepare(
-			"SELECT * FROM {$table_name} WHERE slug = %s AND data_version = %s LIMIT 1",
-			$slug,
-			$data_version
-		);
-
-		$result = $wpdb->get_row( $sql, ARRAY_A );
-
-		return $result ? $result : null;
-	}
-
-	/**
 	 * Fetch a team by external ID.
 	 *
 	 * @param string      $external_id     External team ID.
@@ -146,7 +119,6 @@ class WP_Plugin_Stamdata_Team_Repository {
 				'name'            => $data['name'],
 				'short_name'      => $short_name,
 				'sortable_rank'   => empty( $data['sortable_rank'] ) ? null : sanitize_text_field( $data['sortable_rank'] ),
-				'slug'            => $data['slug'],
 				'image_id'        => empty( $data['image_id'] ) ? null : (int) $data['image_id'],
 				'external_source' => empty( $data['external_source'] ) ? null : $data['external_source'],
 				'external_id'     => empty( $data['external_id'] ) ? null : $data['external_id'],
@@ -155,7 +127,7 @@ class WP_Plugin_Stamdata_Team_Repository {
 				'created_at'      => $timestamp,
 				'updated_at'      => $timestamp,
 			),
-			array( '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( false === $inserted ) {
@@ -184,7 +156,6 @@ class WP_Plugin_Stamdata_Team_Repository {
 				'name'            => $data['name'],
 				'short_name'      => $short_name,
 				'sortable_rank'   => empty( $data['sortable_rank'] ) ? null : sanitize_text_field( $data['sortable_rank'] ),
-				'slug'            => $data['slug'],
 				'image_id'        => empty( $data['image_id'] ) ? null : (int) $data['image_id'],
 				'external_source' => empty( $data['external_source'] ) ? null : $data['external_source'],
 				'external_id'     => empty( $data['external_id'] ) ? null : $data['external_id'],
@@ -195,7 +166,7 @@ class WP_Plugin_Stamdata_Team_Repository {
 			array(
 				'id' => $team_id,
 			),
-			array( '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ),
+			array( '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -248,7 +219,6 @@ class WP_Plugin_Stamdata_Team_Repository {
 					'name'            => $data['name'],
 					'short_name'      => empty( $data['short_name'] ) ? '' : $data['short_name'],
 					'sortable_rank'   => empty( $data['sortable_rank'] ) ? '' : $data['sortable_rank'],
-					'slug'            => $data['slug'],
 					'image_id'        => isset( $existing['image_id'] ) ? (int) $existing['image_id'] : 0,
 					'data_version'    => $data['data_version'],
 					'external_source' => empty( $data['external_source'] ) ? 'nevobo' : $data['external_source'],

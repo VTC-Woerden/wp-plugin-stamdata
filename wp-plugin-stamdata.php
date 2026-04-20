@@ -13,7 +13,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WP_PLUGIN_STAMDATA_VERSION', '0.1.0' );
-define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '11' );
+define( 'WP_PLUGIN_STAMDATA_DB_VERSION', '12' );
 define( 'WP_PLUGIN_STAMDATA_FILE', __FILE__ );
 define( 'WP_PLUGIN_STAMDATA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WP_PLUGIN_STAMDATA_URL', plugin_dir_url( __FILE__ ) );

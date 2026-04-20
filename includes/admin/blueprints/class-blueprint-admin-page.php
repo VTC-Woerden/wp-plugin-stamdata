@@ -79,7 +79,6 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 							<th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Type', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Week', 'wp-plugin-stamdata' ); ?></th>
-							<th><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Velden en slots', 'wp-plugin-stamdata' ); ?></th>
 							<th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th>
 						</tr>
@@ -99,7 +98,6 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 								<td><?php echo esc_html( $blueprint['name'] ); ?></td>
 								<td><?php echo esc_html( 'default' === $blueprint['week_type'] ? __( 'Standaard', 'wp-plugin-stamdata' ) : __( 'Afwijkend', 'wp-plugin-stamdata' ) ); ?></td>
 								<td><?php echo esc_html( 'default' === $blueprint['week_type'] ? __( 'Standard week', 'wp-plugin-stamdata' ) : sprintf( __( 'Week %d', 'wp-plugin-stamdata' ), (int) $blueprint['week_number'] ) ); ?></td>
-								<td><code><?php echo esc_html( $blueprint['slug'] ); ?></code></td>
 								<td><?php $this->render_blueprint_readonly_schedule( $blueprint_field_ids, $availability_by_field, $fields_by_id, $locations_by_id ); ?></td>
 								<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $blueprint['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $blueprint['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this blueprint?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
 							</tr>
@@ -155,7 +153,6 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 					<table class="form-table" role="presentation">
 						<tbody>
 							<tr><th><label for="blueprint_name"><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></label></th><td><input name="name" id="blueprint_name" type="text" class="regular-text" required value="<?php echo esc_attr( $blueprint['name'] ?? '' ); ?>" /></td></tr>
-							<tr><th><label for="blueprint_slug"><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></label></th><td><input name="slug" id="blueprint_slug" type="text" class="regular-text" required value="<?php echo esc_attr( $blueprint['slug'] ?? '' ); ?>" /></td></tr>
 							<tr>
 								<th><label for="blueprint_week_type"><?php esc_html_e( 'Blueprint type', 'wp-plugin-stamdata' ); ?></label></th>
 								<td>
@@ -408,14 +405,13 @@ class WP_Plugin_Stamdata_Blueprint_Admin_Page {
 		);
 		$data         = array(
 			'name'         => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
-			'slug'         => isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '',
 			'week_type'    => in_array( $week_type, array( 'default', 'exception' ), true ) ? $week_type : 'default',
 			'week_number'  => 'exception' === $week_type ? $week_number : 0,
 			'notes'        => isset( $_POST['notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notes'] ) ) : '',
 			'data_version' => stamdata_get_active_data_version(),
 		);
 
-		if ( '' === $data['name'] || '' === $data['slug'] ) {
+		if ( '' === $data['name'] ) {
 			$this->redirect_to_editor_with_notice( 'invalid', $blueprint_id );
 		}
 

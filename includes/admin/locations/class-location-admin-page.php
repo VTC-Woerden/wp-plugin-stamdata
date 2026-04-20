@@ -54,12 +54,11 @@ class WP_Plugin_Stamdata_Location_Admin_Page {
 				<p><?php esc_html_e( 'No locations found yet for the active dataset.', 'wp-plugin-stamdata' ); ?></p>
 			<?php else : ?>
 				<table class="widefat striped">
-					<thead><tr><th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Address', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'City', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th></tr></thead>
+					<thead><tr><th><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Address', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'City', 'wp-plugin-stamdata' ); ?></th><th><?php esc_html_e( 'Actions', 'wp-plugin-stamdata' ); ?></th></tr></thead>
 					<tbody>
 					<?php foreach ( $locations as $location ) : ?>
 						<tr>
 							<td><?php echo esc_html( $location['name'] ); ?></td>
-							<td><code><?php echo esc_html( $location['slug'] ); ?></code></td>
 							<td><?php echo esc_html( $location['address'] ); ?></td>
 							<td><?php echo esc_html( $location['city'] ); ?></td>
 							<td><a href="<?php echo esc_url( $this->get_edit_url( (int) $location['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'wp-plugin-stamdata' ); ?></a> | <a href="<?php echo esc_url( $this->get_delete_url( (int) $location['id'] ) ); ?>" style="color:#b32d2e;" onclick="return confirm('<?php echo esc_js( __( 'Delete this location?', 'wp-plugin-stamdata' ) ); ?>');"><?php esc_html_e( 'Delete', 'wp-plugin-stamdata' ); ?></a></td>
@@ -93,7 +92,6 @@ class WP_Plugin_Stamdata_Location_Admin_Page {
 				<?php if ( $location ) : ?><input type="hidden" name="location_id" value="<?php echo esc_attr( $location['id'] ); ?>" /><?php endif; ?>
 				<table class="form-table" role="presentation"><tbody>
 					<tr><th><label for="location_name"><?php esc_html_e( 'Name', 'wp-plugin-stamdata' ); ?></label></th><td><input name="name" id="location_name" type="text" class="regular-text" required value="<?php echo esc_attr( $location['name'] ?? '' ); ?>" /></td></tr>
-					<tr><th><label for="location_slug"><?php esc_html_e( 'Slug', 'wp-plugin-stamdata' ); ?></label></th><td><input name="slug" id="location_slug" type="text" class="regular-text" required value="<?php echo esc_attr( $location['slug'] ?? '' ); ?>" /></td></tr>
 					<tr><th><label for="location_address"><?php esc_html_e( 'Address', 'wp-plugin-stamdata' ); ?></label></th><td><input name="address" id="location_address" type="text" class="regular-text" value="<?php echo esc_attr( $location['address'] ?? '' ); ?>" /></td></tr>
 					<tr><th><label for="location_city"><?php esc_html_e( 'City', 'wp-plugin-stamdata' ); ?></label></th><td><input name="city" id="location_city" type="text" class="regular-text" value="<?php echo esc_attr( $location['city'] ?? '' ); ?>" /></td></tr>
 				</tbody></table>
@@ -125,12 +123,11 @@ class WP_Plugin_Stamdata_Location_Admin_Page {
 		$location_id = isset( $_POST['location_id'] ) ? absint( $_POST['location_id'] ) : 0;
 		$data        = array(
 			'name'         => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
-			'slug'         => isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '',
 			'address'      => isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : '',
 			'city'         => isset( $_POST['city'] ) ? sanitize_text_field( wp_unslash( $_POST['city'] ) ) : '',
 			'data_version' => stamdata_get_active_data_version(),
 		);
-		if ( '' === $data['name'] || '' === $data['slug'] ) {
+		if ( '' === $data['name'] ) {
 			$this->redirect_to_editor_with_notice( 'invalid', $location_id );
 		}
 		$result = $location_id ? $this->repository->update( $location_id, $data ) : $this->repository->create( $data );

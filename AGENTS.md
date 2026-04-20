@@ -134,7 +134,6 @@ Suggested columns:
 - `name` varchar
 - `short_name` varchar, nullable
 - `sortable_rank` varchar, nullable
-- `slug` varchar
 - `image_id` bigint unsigned, nullable
 - `external_source` varchar, nullable
 - `external_id` varchar, nullable
@@ -150,7 +149,7 @@ Notes:
 - teams should also store a `short_name`; for now this is the last 4 characters of the full name, for example `Quadrant Bouw VTC Woerden DS 1` -> `DS 1`
 - teams imported from Nevobo should also store `sortable_rank`, and overview tables should sort on this value before falling back to the team name
 - external imports must be idempotent, so repeated imports update existing rows instead of creating duplicates
-- if teams are synced from Nevobo or another source, prefer matching by external identifier first and slug second
+- if teams are synced from Nevobo or another source, prefer matching by external identifier only
 
 ### `stamdata_players`
 
@@ -209,7 +208,6 @@ Suggested columns:
 
 - `id` bigint unsigned, primary key
 - `name` varchar
-- `slug` varchar
 - `address` varchar, nullable
 - `city` varchar, nullable
 - `created_at` datetime
@@ -224,7 +222,6 @@ Suggested columns:
 - `id` bigint unsigned, primary key
 - `location_id` bigint unsigned
 - `name` varchar
-- `slug` varchar
 - `sort_order` int, nullable
 - `created_at` datetime
 - `updated_at` datetime
@@ -264,7 +261,6 @@ Suggested columns:
 
 - `id` bigint unsigned, primary key
 - `name` varchar
-- `slug` varchar
 - `week_type` varchar
 - `week_number` tinyint unsigned
 - `notes` text, nullable
@@ -466,7 +462,6 @@ Production rule:
 
 ## Data Integrity Expectations
 
-- Create unique indexes where useful, such as team slugs
 - Add normal indexes for common lookups like `team_id`, `location_id`, and match date
 - Add normal indexes for common lookups like `team_id`, `location_id`, `field_id`, and match date
 - Add normal indexes for common lookups like `team_id`, `location_id`, `field_id`, `blueprint_id`, and match date
